@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-tier-overlay="off">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DMA — Migration Assistant</title>
+  <meta name="description" content="Dynatrace Migration Automation — end-to-end target-state interactive prototype." />
+
+  <!-- Design system: tokens first, then base, then components (STD-FE-001) -->
+  <link rel="stylesheet" href="design-system/tokens.css" />
+  <link rel="stylesheet" href="design-system/base.css" />
+  <link rel="stylesheet" href="design-system/components.css" />
+  <link rel="stylesheet" href="core/shell.css" />
+</head>
+<body>
+  <a class="dt-sr-only" href="#app">Skip to content</a>
+  <div id="app"></div>
+
+  <!-- 1. Core primitives -->
+  <script src="core/ui.js"></script>
+  <script src="core/store.js"></script>
+
+  <!-- 2. Demo data -->
+  <script src="data/features.js"></script>
+  <script src="data/project.js"></script>
+  <script src="data/mapping.js"></script>
+  <script src="data/qualify.js"></script>
+  <script src="data/environment.js"></script>
+  <script src="data/inventory.js"></script>
+  <script src="data/ruleset.js"></script>
+  <script src="data/planning.js"></script>
+  <script src="data/calibration.js"></script>
+  <script src="data/wavemapping.js"></script>
+  <script src="data/translation.js"></script>
+  <script src="data/validation.js"></script>
+  <script src="data/exceptions.js"></script>
+  <script src="data/deploy.js"></script>
+  <script src="data/govern-close.js"></script>
+
+  <!-- 3. Modules. Registration order = sidebar and stage-rail order.
+          Adding, removing, or rebuilding one module touches only its own file
+          plus this one line. -->
+  <script src="modules/overview/index.js"></script>
+  <script src="modules/qualify-scope/index.js"></script>
+  <script src="modules/prepare-environment/index.js"></script>
+  <script src="modules/import/index.js"></script>
+  <script src="modules/global-mapping/index.js"></script>
+  <script src="modules/prioritize-plan/index.js"></script>
+  <script src="modules/wave-mapping/index.js"></script>
+  <script src="modules/calibrate/index.js"></script>
+  <script src="modules/translate/index.js"></script>
+  <script src="modules/validate/index.js"></script>
+  <script src="modules/exceptions/index.js"></script>
+  <script src="modules/deploy/index.js"></script>
+  <script src="modules/govern-close/index.js"></script>
+
+  <!-- 4. Shell boots last, once every module has registered -->
+  <script src="core/shell.js"></script>
+</body>
+</html>

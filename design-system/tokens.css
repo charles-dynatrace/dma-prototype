@@ -1,0 +1,229 @@
+/* ============================================================================
+   STRATO TOKEN MIRROR
+   ----------------------------------------------------------------------------
+   Governed by STD-FE-001 (Strato Design System).
+
+   IMPORTANT FOR ENGINEERING:
+   The token NAMES in this file are the integration contract. They mirror the
+   naming convention of @dynatrace/strato-design-tokens 1:1, so replacing this
+   file with the real Strato ThemeProvider is a swap, not a rewrite.
+
+   The token VALUES are approximations, authored without access to internal
+   Artifactory. Replace them with the real Strato export before any production
+   work. Do not treat the hex values here as canonical.
+
+   STD-FE-001 rule enforced throughout this prototype:
+   no hard-coded colour, spacing, or type values outside this file.
+   ========================================================================== */
+
+:root {
+  /* --- Typography ------------------------------------------------------ */
+  --dt-typography-font-family-default:
+    "Bedrock Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --dt-typography-font-family-mono:
+    "Bedrock Mono", "SF Mono", ui-monospace, "JetBrains Mono", Menlo,
+    Consolas, monospace;
+
+  --dt-typography-display-size: 28px;
+  --dt-typography-display-line: 36px;
+  --dt-typography-heading-size: 20px;
+  --dt-typography-heading-line: 28px;
+  --dt-typography-subheading-size: 15px;
+  --dt-typography-subheading-line: 22px;
+  --dt-typography-base-size: 13px;
+  --dt-typography-base-line: 20px;
+  --dt-typography-small-size: 12px;
+  --dt-typography-small-line: 18px;
+  --dt-typography-code-size: 12px;
+  --dt-typography-code-line: 20px;
+
+  --dt-typography-weight-regular: 400;
+  --dt-typography-weight-medium: 500;
+  --dt-typography-weight-semibold: 600;
+  --dt-typography-weight-bold: 700;
+
+  /* --- Spacing (Strato Size scale) ------------------------------------- */
+  --dt-spacing-0: 0px;
+  --dt-spacing-2: 2px;
+  --dt-spacing-4: 4px;
+  --dt-spacing-6: 6px;
+  --dt-spacing-8: 8px;
+  --dt-spacing-12: 12px;
+  --dt-spacing-16: 16px;
+  --dt-spacing-20: 20px;
+  --dt-spacing-24: 24px;
+  --dt-spacing-32: 32px;
+  --dt-spacing-40: 40px;
+  --dt-spacing-48: 48px;
+  --dt-spacing-64: 64px;
+
+  /* --- Radius ----------------------------------------------------------- */
+  --dt-border-radius-field-default: 4px;
+  --dt-border-radius-container-default: 6px;
+  --dt-border-radius-surface-default: 8px;
+  --dt-border-radius-pill: 999px;
+
+  /* --- Motion ----------------------------------------------------------- */
+  --dt-motion-duration-fast: 120ms;
+  --dt-motion-duration-default: 200ms;
+  --dt-motion-duration-slow: 360ms;
+  --dt-motion-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Elevation -------------------------------------------------------- */
+  --dt-elevation-raised: 0 1px 2px rgba(16, 18, 24, 0.08);
+  --dt-elevation-overlay: 0 8px 24px rgba(16, 18, 24, 0.16);
+  --dt-elevation-modal: 0 16px 48px rgba(16, 18, 24, 0.24);
+
+  /* --- Layout ----------------------------------------------------------- */
+  --dt-layout-sidebar-width: 248px;
+  --dt-layout-topbar-height: 48px;
+  --dt-layout-rail-height: 56px;
+  --dt-layout-content-max: 1440px;
+}
+
+/* ============================================================================
+   LIGHT THEME (default)
+   ========================================================================== */
+:root,
+[data-theme="light"] {
+  --dt-colors-background-base-default: #f2f3f5;
+  --dt-colors-background-surface-default: #ffffff;
+  --dt-colors-background-surface-raised: #ffffff;
+  --dt-colors-background-container-neutral-default: #f2f3f5;
+  --dt-colors-background-container-neutral-subdued: #f8f9fa;
+  --dt-colors-background-container-neutral-emphasized: #e8eaed;
+  --dt-colors-background-container-hover: rgba(22, 23, 26, 0.04);
+  --dt-colors-background-container-selected: rgba(88, 65, 216, 0.08);
+
+  --dt-colors-text-primary-default: #16171a;
+  --dt-colors-text-secondary-default: #5c5f66;
+  --dt-colors-text-subdued-default: #8a8d94;
+  --dt-colors-text-onbold-default: #ffffff;
+
+  --dt-colors-border-neutral-default: #dfe1e5;
+  --dt-colors-border-neutral-subdued: #ebedf0;
+  --dt-colors-border-neutral-emphasized: #c3c6cc;
+  --dt-colors-border-focus-default: #5841d8;
+
+  /* Primary / brand */
+  --dt-colors-primary-default: #5841d8;
+  --dt-colors-primary-hover: #4a35c0;
+  --dt-colors-primary-active: #3d2aa3;
+  --dt-colors-primary-subdued: #ede9fc;
+  --dt-colors-primary-text: #4a35c0;
+
+  /* Status: critical */
+  --dt-colors-charts-categorical-color-critical: #d4203a;
+  --dt-colors-background-critical-default: #d4203a;
+  --dt-colors-background-critical-subdued: #fdeaed;
+  --dt-colors-text-critical-default: #b01a30;
+  --dt-colors-border-critical-default: #f4bcc5;
+
+  /* Status: warning */
+  --dt-colors-background-warning-default: #d98324;
+  --dt-colors-background-warning-subdued: #fdf2e3;
+  --dt-colors-text-warning-default: #a8651a;
+  --dt-colors-border-warning-default: #f2d6a8;
+
+  /* Status: success */
+  --dt-colors-background-success-default: #1f8a52;
+  --dt-colors-background-success-subdued: #e6f5ec;
+  --dt-colors-text-success-default: #1a7345;
+  --dt-colors-border-success-default: #b3e0c6;
+
+  /* Status: info */
+  --dt-colors-background-info-default: #1070cc;
+  --dt-colors-background-info-subdued: #e6f1fc;
+  --dt-colors-text-info-default: #0d5da8;
+  --dt-colors-border-info-default: #b8d7f5;
+
+  /* Status: neutral / muted */
+  --dt-colors-background-neutral-default: #6b6e75;
+  --dt-colors-background-neutral-subdued: #eef0f2;
+  --dt-colors-text-neutral-default: #5c5f66;
+  --dt-colors-border-neutral-badge: #d5d8dd;
+
+  --dt-colors-overlay-scrim: rgba(16, 18, 24, 0.44);
+  --dt-colors-code-background: #f6f7f9;
+  --dt-colors-diff-added: #e6f5ec;
+  --dt-colors-diff-removed: #fdeaed;
+}
+
+/* ============================================================================
+   DARK THEME
+   ========================================================================== */
+[data-theme="dark"] {
+  --dt-colors-background-base-default: #0e1016;
+  --dt-colors-background-surface-default: #16191f;
+  --dt-colors-background-surface-raised: #1c2029;
+  --dt-colors-background-container-neutral-default: #1c2029;
+  --dt-colors-background-container-neutral-subdued: #171a21;
+  --dt-colors-background-container-neutral-emphasized: #252a34;
+  --dt-colors-background-container-hover: rgba(255, 255, 255, 0.05);
+  --dt-colors-background-container-selected: rgba(138, 116, 255, 0.14);
+
+  --dt-colors-text-primary-default: #e9ebef;
+  --dt-colors-text-secondary-default: #a3a8b2;
+  --dt-colors-text-subdued-default: #777d88;
+  --dt-colors-text-onbold-default: #ffffff;
+
+  --dt-colors-border-neutral-default: #2a2f3a;
+  --dt-colors-border-neutral-subdued: #22262f;
+  --dt-colors-border-neutral-emphasized: #3a4150;
+  --dt-colors-border-focus-default: #8a74ff;
+
+  --dt-colors-primary-default: #7a63f0;
+  --dt-colors-primary-hover: #8a74ff;
+  --dt-colors-primary-active: #6b53e0;
+  --dt-colors-primary-subdued: #241f44;
+  --dt-colors-primary-text: #a894ff;
+
+  --dt-colors-charts-categorical-color-critical: #f2566e;
+  --dt-colors-background-critical-default: #d4203a;
+  --dt-colors-background-critical-subdued: #2e1419;
+  --dt-colors-text-critical-default: #f2778a;
+  --dt-colors-border-critical-default: #5c2029;
+
+  --dt-colors-background-warning-default: #d98324;
+  --dt-colors-background-warning-subdued: #2d1f0f;
+  --dt-colors-text-warning-default: #e8a65a;
+  --dt-colors-border-warning-default: #5c411c;
+
+  --dt-colors-background-success-default: #1f8a52;
+  --dt-colors-background-success-subdued: #10241a;
+  --dt-colors-text-success-default: #4cc184;
+  --dt-colors-border-success-default: #1f4a33;
+
+  --dt-colors-background-info-default: #1070cc;
+  --dt-colors-background-info-subdued: #10203a;
+  --dt-colors-text-info-default: #5aa9f0;
+  --dt-colors-border-info-default: #1e3f66;
+
+  --dt-colors-background-neutral-default: #6b7280;
+  --dt-colors-background-neutral-subdued: #22262f;
+  --dt-colors-text-neutral-default: #a3a8b2;
+  --dt-colors-border-neutral-badge: #343a46;
+
+  --dt-colors-overlay-scrim: rgba(0, 0, 0, 0.62);
+  --dt-colors-code-background: #12151b;
+  --dt-colors-diff-added: #10241a;
+  --dt-colors-diff-removed: #2e1419;
+
+  --dt-elevation-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --dt-elevation-overlay: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --dt-elevation-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================================
+   ROADMAP TIER COLOURS
+   Prototype-only. Used by the P0–P3 tier overlay, which is a presentation
+   affordance for this artifact and is NOT part of the product UI.
+   ========================================================================== */
+:root {
+  --dma-tier-p0: #d4203a;
+  --dma-tier-p1: #d98324;
+  --dma-tier-p2: #1070cc;
+  --dma-tier-p3: #6b7280;
+  --dma-tier-live: #1f8a52;
+}

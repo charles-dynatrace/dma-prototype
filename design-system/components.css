@@ -1,0 +1,337 @@
+/* ============================================================================
+   STRATO COMPONENT MIRROR
+   ----------------------------------------------------------------------------
+   Each class below stands in for a real Strato component. The comment above
+   each block names the Strato component it maps to, so engineering can
+   substitute the real import rather than port the CSS.
+
+   Consumes tokens.css ONLY. No hard-coded values (STD-FE-001).
+   ========================================================================== */
+
+/* --- <Button>  (Strato: Button) ------------------------------------------ */
+.dt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dt-spacing-6);
+  height: 32px;
+  padding: 0 var(--dt-spacing-12);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-field-default);
+  font-size: var(--dt-typography-base-size);
+  font-weight: var(--dt-typography-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transition: background var(--dt-motion-duration-fast) var(--dt-motion-easing-default),
+              border-color var(--dt-motion-duration-fast) var(--dt-motion-easing-default),
+              color var(--dt-motion-duration-fast) var(--dt-motion-easing-default);
+}
+.dt-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.dt-btn--emphasized {
+  background: var(--dt-colors-primary-default);
+  color: var(--dt-colors-text-onbold-default);
+}
+.dt-btn--emphasized:hover:not(:disabled) { background: var(--dt-colors-primary-hover); }
+.dt-btn--emphasized:active:not(:disabled) { background: var(--dt-colors-primary-active); }
+
+.dt-btn--default {
+  background: var(--dt-colors-background-surface-default);
+  border-color: var(--dt-colors-border-neutral-emphasized);
+  color: var(--dt-colors-text-primary-default);
+}
+.dt-btn--default:hover:not(:disabled) { background: var(--dt-colors-background-container-hover); }
+
+.dt-btn--subtle {
+  background: transparent;
+  color: var(--dt-colors-text-secondary-default);
+}
+.dt-btn--subtle:hover:not(:disabled) {
+  background: var(--dt-colors-background-container-hover);
+  color: var(--dt-colors-text-primary-default);
+}
+
+.dt-btn--critical {
+  background: var(--dt-colors-background-critical-default);
+  color: var(--dt-colors-text-onbold-default);
+}
+.dt-btn--critical:hover:not(:disabled) { filter: brightness(1.08); }
+
+.dt-btn--sm { height: 26px; padding: 0 var(--dt-spacing-8); font-size: var(--dt-typography-small-size); }
+.dt-btn--lg { height: 40px; padding: 0 var(--dt-spacing-20); font-size: var(--dt-typography-subheading-size); }
+.dt-btn--icon { width: 32px; padding: 0; }
+.dt-btn--block { width: 100%; }
+
+/* --- <Surface> / <Card>  (Strato: Surface) ------------------------------- */
+.dt-card {
+  background: var(--dt-colors-background-surface-default);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-surface-default);
+  box-shadow: var(--dt-elevation-raised);
+}
+.dt-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-16) var(--dt-spacing-20);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dt-card__title {
+  font-size: var(--dt-typography-subheading-size);
+  line-height: var(--dt-typography-subheading-line);
+  font-weight: var(--dt-typography-weight-semibold);
+}
+.dt-card__body { padding: var(--dt-spacing-20); }
+.dt-card__body--flush { padding: 0; }
+.dt-card__footer {
+  padding: var(--dt-spacing-12) var(--dt-spacing-20);
+  border-top: 1px solid var(--dt-colors-border-neutral-subdued);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border-radius: 0 0 var(--dt-border-radius-surface-default) var(--dt-border-radius-surface-default);
+}
+
+/* --- <Chip> / <Badge>  (Strato: Chip) ------------------------------------ */
+.dt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-4);
+  height: 20px;
+  padding: 0 var(--dt-spacing-8);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-pill);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+.dt-badge--neutral  { background: var(--dt-colors-background-neutral-subdued);  color: var(--dt-colors-text-neutral-default);  border-color: var(--dt-colors-border-neutral-badge); }
+.dt-badge--success  { background: var(--dt-colors-background-success-subdued);  color: var(--dt-colors-text-success-default);  border-color: var(--dt-colors-border-success-default); }
+.dt-badge--warning  { background: var(--dt-colors-background-warning-subdued);  color: var(--dt-colors-text-warning-default);  border-color: var(--dt-colors-border-warning-default); }
+.dt-badge--critical { background: var(--dt-colors-background-critical-subdued); color: var(--dt-colors-text-critical-default); border-color: var(--dt-colors-border-critical-default); }
+.dt-badge--info     { background: var(--dt-colors-background-info-subdued);     color: var(--dt-colors-text-info-default);     border-color: var(--dt-colors-border-info-default); }
+.dt-badge--primary  { background: var(--dt-colors-primary-subdued);             color: var(--dt-colors-primary-text);          border-color: transparent; }
+
+.dt-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* --- <ProgressBar>  (Strato: ProgressBar) -------------------------------- */
+.dt-progress {
+  position: relative;
+  height: 6px;
+  width: 100%;
+  background: var(--dt-colors-background-container-neutral-emphasized);
+  border-radius: var(--dt-border-radius-pill);
+  overflow: hidden;
+}
+.dt-progress__fill {
+  height: 100%;
+  border-radius: var(--dt-border-radius-pill);
+  background: var(--dt-colors-primary-default);
+  transition: width var(--dt-motion-duration-slow) var(--dt-motion-easing-default);
+}
+.dt-progress__fill--success  { background: var(--dt-colors-background-success-default); }
+.dt-progress__fill--warning  { background: var(--dt-colors-background-warning-default); }
+.dt-progress__fill--critical { background: var(--dt-colors-background-critical-default); }
+/* `info` completes the tone vocabulary the other primitives already accept —
+   badge("…", "info") and banner("info", …) both resolve, so a stacked bar
+   segment asking for the same tone should not silently fall through to the
+   default primary fill. */
+.dt-progress__fill--info     { background: var(--dt-colors-background-info-default); }
+
+/* Segmented / stacked bar */
+.dt-progress--stacked { display: flex; }
+.dt-progress--stacked .dt-progress__fill { border-radius: 0; }
+
+/* --- <DataTable>  (Strato: DataTable) ------------------------------------ */
+.dt-table { width: 100%; border-collapse: collapse; }
+.dt-table th {
+  text-align: left;
+  padding: var(--dt-spacing-8) var(--dt-spacing-16);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-semibold);
+  color: var(--dt-colors-text-secondary-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+  white-space: nowrap;
+}
+.dt-table td {
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-subdued);
+  vertical-align: middle;
+}
+.dt-table tbody tr:last-child td { border-bottom: none; }
+.dt-table tbody tr:hover { background: var(--dt-colors-background-container-hover); }
+.dt-table--clickable tbody tr { cursor: pointer; }
+
+/* --- <TextInput> / <Select>  (Strato: TextInput, Select) ----------------- */
+.dt-field { display: flex; flex-direction: column; gap: var(--dt-spacing-6); }
+.dt-field__label {
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-medium);
+  color: var(--dt-colors-text-secondary-default);
+}
+.dt-field__hint {
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dt-input,
+.dt-select,
+.dt-textarea {
+  width: 100%;
+  min-height: 32px;
+  padding: var(--dt-spacing-6) var(--dt-spacing-12);
+  background: var(--dt-colors-background-surface-default);
+  border: 1px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-field-default);
+  color: var(--dt-colors-text-primary-default);
+  font-family: inherit;
+  font-size: var(--dt-typography-base-size);
+  line-height: var(--dt-typography-base-line);
+}
+.dt-textarea { min-height: 72px; resize: vertical; }
+.dt-input::placeholder, .dt-textarea::placeholder { color: var(--dt-colors-text-subdued-default); }
+.dt-input:focus, .dt-select:focus, .dt-textarea:focus {
+  outline: none;
+  border-color: var(--dt-colors-border-focus-default);
+  box-shadow: 0 0 0 2px var(--dt-colors-primary-subdued);
+}
+
+/* --- <Tabs>  (Strato: Tabs) ---------------------------------------------- */
+.dt-tabs {
+  display: flex;
+  gap: var(--dt-spacing-4);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+}
+.dt-tab {
+  position: relative;
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  background: transparent;
+  border: none;
+  color: var(--dt-colors-text-secondary-default);
+  font-weight: var(--dt-typography-weight-medium);
+}
+.dt-tab:hover { color: var(--dt-colors-text-primary-default); }
+.dt-tab[aria-selected="true"] { color: var(--dt-colors-primary-text); }
+.dt-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: var(--dt-spacing-8);
+  right: var(--dt-spacing-8);
+  bottom: -1px;
+  height: 2px;
+  background: var(--dt-colors-primary-default);
+  border-radius: var(--dt-border-radius-pill);
+}
+
+/* --- <Banner> / <Hint>  (Strato: Banner) --------------------------------- */
+.dt-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border: 1px solid;
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dt-banner--info     { background: var(--dt-colors-background-info-subdued);     border-color: var(--dt-colors-border-info-default);     color: var(--dt-colors-text-info-default); }
+.dt-banner--success  { background: var(--dt-colors-background-success-subdued);  border-color: var(--dt-colors-border-success-default);  color: var(--dt-colors-text-success-default); }
+.dt-banner--warning  { background: var(--dt-colors-background-warning-subdued);  border-color: var(--dt-colors-border-warning-default);  color: var(--dt-colors-text-warning-default); }
+.dt-banner--critical { background: var(--dt-colors-background-critical-subdued); border-color: var(--dt-colors-border-critical-default); color: var(--dt-colors-text-critical-default); }
+.dt-banner__body { color: var(--dt-colors-text-primary-default); }
+
+/* --- <EmptyState>  (Strato: EmptyState) ---------------------------------- */
+.dt-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-64) var(--dt-spacing-24);
+  text-align: center;
+  color: var(--dt-colors-text-secondary-default);
+}
+.dt-empty__icon { color: var(--dt-colors-text-subdued-default); }
+
+/* --- <Divider>  (Strato: Divider) ---------------------------------------- */
+.dt-divider { height: 1px; background: var(--dt-colors-border-neutral-subdued); border: none; margin: 0; }
+.dt-divider--v { width: 1px; height: auto; align-self: stretch; }
+
+/* --- <Tooltip>  (Strato: Tooltip) ---------------------------------------- */
+.dt-tip { position: relative; }
+.dt-tip__content {
+  position: absolute;
+  bottom: calc(100% + var(--dt-spacing-6));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--dt-spacing-4) var(--dt-spacing-8);
+  background: var(--dt-colors-text-primary-default);
+  color: var(--dt-colors-background-surface-default);
+  border-radius: var(--dt-border-radius-field-default);
+  font-size: var(--dt-typography-small-size);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dt-motion-duration-fast) var(--dt-motion-easing-default);
+  z-index: 50;
+}
+.dt-tip:hover .dt-tip__content, .dt-tip:focus-within .dt-tip__content { opacity: 1; }
+
+/* --- <Modal>  (Strato: Modal) -------------------------------------------- */
+.dt-modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--dt-colors-overlay-scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--dt-spacing-24);
+  z-index: 100;
+}
+.dt-modal {
+  width: min(640px, 100%);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--dt-colors-background-surface-raised);
+  border-radius: var(--dt-border-radius-surface-default);
+  box-shadow: var(--dt-elevation-modal);
+}
+.dt-modal--wide { width: min(1040px, 100%); }
+
+/* --- Code block ----------------------------------------------------------- */
+.dt-code {
+  display: block;
+  padding: var(--dt-spacing-12);
+  background: var(--dt-colors-code-background);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --- Skeleton / loading  (Strato: SkeletonText) -------------------------- */
+.dt-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--dt-colors-background-container-neutral-emphasized) 25%,
+    var(--dt-colors-background-container-neutral-subdued) 50%,
+    var(--dt-colors-background-container-neutral-emphasized) 75%
+  );
+  background-size: 200% 100%;
+  animation: dt-shimmer 1.4s infinite;
+  border-radius: var(--dt-border-radius-field-default);
+}
+@keyframes dt-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Spinner  (Strato: LoadingIndicator) --------------------------------- */
+.dt-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: dt-spin 0.7s linear infinite;
+  flex: none;
+}
+@keyframes dt-spin { to { transform: rotate(360deg); } }

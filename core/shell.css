@@ -1,0 +1,3106 @@
+/* ============================================================================
+   App shell — chrome only. Mirrors the Strato AppShell / AppHeader / Sidebar
+   composition used by Dynatrace platform apps.
+   Consumes tokens.css only.
+   ========================================================================== */
+
+.dma-app {
+  display: grid;
+  grid-template-rows: var(--dt-layout-topbar-height) 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Top bar  (Strato: AppHeader) ---------------------------------------- */
+.dma-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-16);
+  padding: 0 var(--dt-spacing-16);
+  background: var(--dt-colors-background-surface-default);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+  z-index: 20;
+}
+
+.dma-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  font-weight: var(--dt-typography-weight-semibold);
+  white-space: nowrap;
+}
+.dma-topbar__logo {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--dt-border-radius-field-default);
+  background: var(--dt-colors-primary-default);
+  color: var(--dt-colors-text-onbold-default);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: var(--dt-typography-weight-bold);
+  letter-spacing: -0.02em;
+}
+.dma-topbar__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--dt-colors-border-neutral-default);
+}
+.dma-topbar__project {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  color: var(--dt-colors-text-secondary-default);
+}
+
+/* --- Body split ---------------------------------------------------------- */
+.dma-body {
+  display: grid;
+  grid-template-columns: var(--dt-layout-sidebar-width) 1fr;
+  min-height: 0;
+}
+
+/* --- Sidebar  (Strato: Sidebar / AppNavigation) -------------------------- */
+.dma-sidebar {
+  background: var(--dt-colors-background-surface-default);
+  border-right: 1px solid var(--dt-colors-border-neutral-default);
+  overflow-y: auto;
+  padding: var(--dt-spacing-12) var(--dt-spacing-8) var(--dt-spacing-24);
+}
+
+.dma-sidebar__project {
+  margin: var(--dt-spacing-4) var(--dt-spacing-4) var(--dt-spacing-16);
+  padding: var(--dt-spacing-12);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+}
+
+.dma-sidebar__group-label {
+  padding: var(--dt-spacing-12) var(--dt-spacing-12) var(--dt-spacing-4);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dt-colors-text-subdued-default);
+}
+
+.dma-navitem {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  width: 100%;
+  padding: var(--dt-spacing-6) var(--dt-spacing-12);
+  margin-bottom: 1px;
+  background: transparent;
+  border: none;
+  border-radius: var(--dt-border-radius-field-default);
+  color: var(--dt-colors-text-secondary-default);
+  text-align: left;
+  font-size: var(--dt-typography-base-size);
+}
+.dma-navitem:hover {
+  background: var(--dt-colors-background-container-hover);
+  color: var(--dt-colors-text-primary-default);
+}
+.dma-navitem[aria-current="page"] {
+  background: var(--dt-colors-background-container-selected);
+  color: var(--dt-colors-primary-text);
+  font-weight: var(--dt-typography-weight-medium);
+}
+.dma-navitem__label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dma-navitem__dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.dma-navitem__dot--complete    { background: var(--dt-colors-background-success-default); }
+.dma-navitem__dot--in-progress { background: var(--dt-colors-background-info-default); }
+.dma-navitem__dot--blocked     { background: var(--dt-colors-background-critical-default); }
+.dma-navitem__dot--not-started { background: var(--dt-colors-border-neutral-emphasized); }
+
+/* --- Main ---------------------------------------------------------------- */
+.dma-main {
+  overflow-y: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Phase pipeline  (the top nav) ---------------------------------------
+   Five phases, each with a completion fraction and a segment per stage. The
+   predecessor listed all thirteen stages here, which made it the sidebar in a
+   horizontal coat and meant it overflowed at any realistic viewport width.
+   Five chips fit, so there is no scroll container and no pinned right-hand
+   region to keep anything reachable. */
+.dma-pipe {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex: 0 0 auto; /* column flex parent must not compress the pipeline */
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-8) var(--dt-spacing-24);
+  background: var(--dt-colors-background-surface-default);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+}
+
+/* What the fractions are counting. Sits left of the track and reads as a
+   label, not a control, because the control it replaced moved to the page
+   header — but it is a button when a wave is in scope, since it is then the
+   only way back to the estate from a stage with no picker. */
+.dma-pipe__subject {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  /* Shrinkable, never growable. It is the widest fixed thing in the bar, so
+     at `0 0 auto` a long wave name held its full width and took the shortfall
+     out of the five chips instead. */
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: var(--dt-spacing-6) var(--dt-spacing-8);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-field-default);
+  background: none;
+  color: var(--dt-colors-text-primary-default);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-medium);
+  white-space: nowrap;
+}
+/* Secondary, not subdued, here and on every other label in this bar.
+   `--dt-colors-text-subdued-default` measures 3.32:1 on this surface in light
+   and 4.25:1 in dark, so it misses AA both ways — that is a token-level
+   problem affecting ~32 places per theme and is logged as such. What is
+   specific to this bar is that the old rail used subdued for decoration
+   beside fully-labelled stage buttons, whereas here the phase name and the
+   asset counts *are* the content. Inheriting a failing token onto text that
+   is now load-bearing would be adding to a known bug on purpose. Secondary
+   gives 6.4:1 / 7.38:1 and still reads a clear step below primary. */
+/* Wave names run long ("Core — Risk & Screening"). No max-width: a fixed
+   ceiling truncated the name at 1512px where there was ample room, which is
+   worse than the overflow it was guarding against. Shrinking to fit does the
+   same job only when the space is actually short. */
+.dma-pipe__subject-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dma-pipe__subject-detail {
+  color: var(--dt-colors-text-secondary-default);
+  font-weight: var(--dt-typography-weight-regular);
+}
+.dma-pipe__subject--scoped {
+  border-color: var(--dt-colors-primary-default);
+  background: var(--dt-colors-background-container-selected);
+  color: var(--dt-colors-primary-text);
+  cursor: pointer;
+}
+/* `color: inherit` with no dimming. This carried `opacity: 0.75`, which
+   measured 4.18:1 light and 3.96:1 dark against the selected-container fill
+   and so missed AA in both themes. The weights already separate these two —
+   the subject is 500, the detail 400 — so the opacity was buying a hierarchy
+   that existed anyway and paying for it in legibility. Undimmed: 7.26:1 and
+   5.85:1. */
+.dma-pipe__subject--scoped .dma-pipe__subject-detail { color: inherit; }
+.dma-pipe__subject--scoped:hover { background: var(--dt-colors-background-container-hover); }
+
+.dma-pipe__track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--dt-spacing-2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dma-pipe__phase {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  align-items: flex-start;
+  /* `auto` basis, not 0. Equal-width chips looked tidier and clipped
+     "Govern & Close" to an ellipsis at 1280px, which is a laptop, not an edge
+     case. Sizing from content and sharing the slack means the long label gets
+     the room it needs and the short ones give it up. */
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--dt-spacing-6) var(--dt-spacing-8);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-container-default);
+  background: none;
+  text-align: left;
+}
+.dma-pipe__phase:hover { background: var(--dt-colors-background-container-hover); }
+.dma-pipe__phase--current {
+  border-color: var(--dt-colors-primary-default);
+  background: var(--dt-colors-background-container-selected);
+}
+
+.dma-pipe__label {
+  font-size: 10px;
+  font-weight: var(--dt-typography-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dt-colors-text-secondary-default);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dma-pipe__phase--current .dma-pipe__label { color: var(--dt-colors-primary-text); }
+
+.dma-pipe__row {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  width: 100%;
+  min-width: 0;
+}
+
+/* One segment per stage. The fraction says how many; this says which. The
+   fraction is the accessible version — the meter adds position, not
+   information, so it never has to carry meaning by colour alone.
+
+   All three reachable states get an explicit rule, including the one that
+   matches the base. Leaving `--not-started` to fall through to `.dma-pipe__seg`
+   would work and would also mean a reader had to infer the third state from
+   its absence, which is how `dma-gateitem--pass` ended up used-but-undefined. */
+.dma-pipe__meter {
+  display: flex;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 24px;
+}
+.dma-pipe__seg {
+  flex: 1 1 0;
+  height: 4px;
+  border-radius: 2px;
+}
+.dma-pipe__seg--not-started { background: var(--dt-colors-border-neutral-default); }
+.dma-pipe__seg--complete { background: var(--dt-colors-text-success-default); }
+.dma-pipe__seg--in-progress { background: var(--dt-colors-primary-default); }
+
+.dma-pipe__count {
+  flex: 0 0 auto;
+  font-size: var(--dt-typography-small-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--dt-colors-text-secondary-default);
+}
+.dma-pipe__phase--current .dma-pipe__count {
+  color: var(--dt-colors-primary-text);
+  font-weight: var(--dt-typography-weight-medium);
+}
+
+.dma-pipe__sep {
+  align-self: center;
+  color: var(--dt-colors-text-subdued-default);
+  flex: 0 0 auto;
+}
+
+/* --- Wave scope picker  (page header, wave-scoped stages only) ----------- */
+.dma-scope {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  flex: 0 0 auto;
+  margin-right: var(--dt-spacing-4);
+  padding-right: var(--dt-spacing-12);
+  border-right: 1px solid var(--dt-colors-border-neutral-subdued);
+  font-size: var(--dt-typography-small-size);
+  white-space: nowrap;
+}
+/* Last in the row when the module supplies no actions — nothing to divide. */
+.dma-scope:only-child {
+  margin-right: 0;
+  padding-right: 0;
+  border-right: none;
+}
+.dma-scope__label {
+  font-size: 10px;
+  font-weight: var(--dt-typography-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dt-colors-text-secondary-default);
+}
+.dma-scope__detail { color: var(--dt-colors-text-secondary-default); }
+
+.dma-scope__select {
+  appearance: none;
+  max-width: 200px;
+  text-overflow: ellipsis;
+  padding: var(--dt-spacing-4) var(--dt-spacing-24) var(--dt-spacing-4) var(--dt-spacing-8);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-field-default);
+  background-color: var(--dt-colors-background-surface-default);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 11px center, right 6px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--dt-colors-text-primary-default);
+  font: inherit;
+  font-size: var(--dt-typography-small-size);
+  cursor: pointer;
+}
+.dma-scope__select:hover { background-color: var(--dt-colors-background-container-hover); }
+
+/* --- Content ------------------------------------------------------------- */
+.dma-content {
+  flex: 1 0 auto;
+  padding: var(--dt-spacing-24);
+  max-width: var(--dt-layout-content-max);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-20);
+}
+
+.dma-pagehead { display: flex; align-items: flex-start; gap: var(--dt-spacing-16); flex-wrap: wrap; }
+.dma-pagehead__title { display: flex; align-items: center; gap: var(--dt-spacing-12); flex-wrap: wrap; }
+
+/* The control row has to lose the width fight before the title does.
+   Once the scope picker joined the buttons, wave-mapping's controls wanted
+   761px of a 794px header and squeezed the title column down to 17px — the
+   heading was still "there", just shrink-wrapped into a sliver and spilling
+   out of its own box. Nothing reported it, because the overflow was absorbed
+   by an ancestor and never reached the document.
+
+   The floor is what makes the wrap happen. Without it flexbox is perfectly
+   happy to honour `flex-wrap` and still shrink the title to nothing first,
+   since a 17px column is a legal solution. With it, the controls have no
+   legal way to fit alongside a cramped title and drop to their own line.
+
+   The basis has to be that same 320px rather than `auto`. Line breaking runs
+   on the basis, and `auto` resolves to the summary sentence's max-content
+   width — around 800px of unwrapped prose — so every module with a summary
+   decided it could not share a line with the controls and wrapped them even
+   at 1512px, where there was room to spare. Pinning the basis means the
+   decision is made on the floor we actually care about: 320 + controls. */
+.dma-pagehead__main { flex: 1 1 320px; min-width: 320px; }
+.dma-pagehead__controls { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+
+/* --- KPI tile ------------------------------------------------------------ */
+.dma-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-16);
+  background: var(--dt-colors-background-surface-default);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-surface-default);
+  box-shadow: var(--dt-elevation-raised);
+}
+.dma-kpi__label {
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+}
+.dma-kpi__value {
+  font-size: var(--dt-typography-display-size);
+  line-height: 1.1;
+  font-weight: var(--dt-typography-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.dma-kpi__meta { font-size: var(--dt-typography-small-size); color: var(--dt-colors-text-subdued-default); }
+
+/* --- In-stage stepper ----------------------------------------------------
+   Each built module renders its own sub-steps here. When the stage rail is
+   rebuilt as a drill-down it will render the same `steps` array instead. */
+.dma-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-4);
+  flex-wrap: wrap;
+}
+.dma-steps__sep { color: var(--dt-colors-text-subdued-default); display: inline-flex; }
+
+.dma-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-6) var(--dt-spacing-12) var(--dt-spacing-6) var(--dt-spacing-6);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-pill);
+  background: none;
+  font: inherit;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+  cursor: pointer;
+}
+.dma-step:hover { background: var(--dt-colors-background-container-hover); }
+.dma-step[aria-selected="true"] {
+  background: var(--dt-colors-background-container-selected);
+  border-color: var(--dt-colors-border-info-default);
+  color: var(--dt-colors-text-primary-default);
+  font-weight: var(--dt-typography-weight-medium);
+}
+.dma-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--dt-border-radius-pill);
+  background: var(--dt-colors-background-container-neutral-default);
+  font-size: 11px;
+  font-weight: var(--dt-typography-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.dma-step[aria-selected="true"] .dma-step__num {
+  background: var(--dt-colors-background-info-default);
+  color: var(--dt-colors-text-onbold-default);
+}
+
+/* --- Definition list ------------------------------------------------------ */
+.dma-deflist { display: flex; flex-direction: column; }
+.dma-deflist__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-6) 0;
+  border-bottom: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dma-deflist__row:last-child { border-bottom: none; }
+.dma-deflist__row > :first-child { flex: 0 0 150px; }
+.dma-deflist__row > :last-child { flex: 1 1 auto; min-width: 0; }
+
+/* --- Pathway comparison --------------------------------------------------- */
+.dma-pathways {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--dt-spacing-12);
+}
+.dma-pathway {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-pathway--chosen {
+  border-color: var(--dt-colors-border-info-default);
+  background: var(--dt-colors-background-info-subdued);
+}
+
+/* --- Maturity scale ------------------------------------------------------- */
+.dma-scale {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--dt-spacing-8);
+}
+.dma-scale__step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-top: 3px solid var(--dt-colors-border-neutral-emphasized);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-scale__step--reached { border-top-color: var(--dt-colors-background-success-default); }
+.dma-scale__step--bar {
+  border-color: var(--dt-colors-border-info-default);
+  border-top-color: var(--dt-colors-background-info-default);
+  background: var(--dt-colors-background-info-subdued);
+}
+.dma-scale__num {
+  font-size: var(--dt-typography-subheading-size);
+  font-weight: var(--dt-typography-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-scale__flag {
+  margin-top: auto;
+  padding-top: var(--dt-spacing-6);
+  font-size: 10px;
+  font-weight: var(--dt-typography-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dt-colors-text-info-default);
+}
+
+/* --- Readiness domains ---------------------------------------------------- */
+.dma-domains {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--dt-spacing-12);
+}
+.dma-domain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-domain--short { border-color: var(--dt-colors-border-warning-default); }
+.dma-domain__score { display: flex; align-items: baseline; gap: var(--dt-spacing-4); flex: none; }
+.dma-domain__current {
+  font-size: var(--dt-typography-heading-size);
+  font-weight: var(--dt-typography-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.dma-signals { display: flex; flex-direction: column; gap: var(--dt-spacing-6); margin: 0; padding: 0; list-style: none; }
+.dma-signal { display: flex; align-items: flex-start; gap: var(--dt-spacing-6); }
+
+/* --- Architect action ----------------------------------------------------- */
+.dma-action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-action--blocking { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-action--done { border-left-color: var(--dt-colors-background-success-default); opacity: 0.72; }
+
+/* --- Readiness gate item -------------------------------------------------- */
+.dma-gateitem {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-gateitem--fail    { border-color: var(--dt-colors-border-critical-default); background: var(--dt-colors-background-critical-subdued); }
+.dma-gateitem--pending { border-color: var(--dt-colors-border-warning-default); background: var(--dt-colors-background-warning-subdued); }
+
+/* --- Exclusion row -------------------------------------------------------- */
+.dma-exclusion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+
+/* --- Roadmap tier overlay ------------------------------------------------ */
+.dma-tier {
+  display: none; /* revealed by [data-tier-overlay="on"] */
+  align-items: center;
+  height: 16px;
+  padding: 0 var(--dt-spacing-6);
+  border-radius: var(--dt-border-radius-pill);
+  font-size: 10px;
+  font-weight: var(--dt-typography-weight-bold);
+  letter-spacing: 0.04em;
+  color: var(--dt-colors-text-onbold-default);
+  white-space: nowrap;
+}
+[data-tier-overlay="on"] .dma-tier { display: inline-flex; }
+.dma-tier[data-tier="p0"]   { background: var(--dma-tier-p0); }
+.dma-tier[data-tier="p1"]   { background: var(--dma-tier-p1); }
+.dma-tier[data-tier="p2"]   { background: var(--dma-tier-p2); }
+.dma-tier[data-tier="p3"]   { background: var(--dma-tier-p3); }
+.dma-tier[data-tier="live"] { background: var(--dma-tier-live); }
+
+/* --- Stub module placeholder --------------------------------------------- */
+.dma-stub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-32);
+  border: 1px dashed var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-surface-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+
+/* --- Feature strip (what this screen implements) ------------------------- */
+.dma-featurestrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dt-spacing-8);
+}
+.dma-featurepill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-4) var(--dt-spacing-8);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-pill);
+  background: var(--dt-colors-background-surface-default);
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+}
+.dma-featurepill__proposed {
+  padding: 0 var(--dt-spacing-6);
+  border: 1px dashed var(--dt-colors-border-warning-default);
+  border-radius: var(--dt-border-radius-pill);
+  color: var(--dt-colors-text-warning-default);
+  font-size: var(--dt-typography-small-size);
+}
+/* Approved roadmap, deliberately deferred out of this prototype. Dashed like
+   "Proposed" because both mean "do not build against this yet", but neutral
+   rather than warning — a parked item is a decision, not a risk. */
+.dma-featurepill__parked {
+  padding: 0 var(--dt-spacing-6);
+  border: 1px dashed var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-pill);
+  color: var(--dt-colors-text-subdued-default);
+  font-size: var(--dt-typography-small-size);
+}
+
+/* --- Import ---------------------------------------------------------------
+   Inline query text and field values, the partial-run failure block, the
+   blocked-vs-rework pair, and the version timeline with its diff. */
+.dma-code {
+  font-family: var(--dt-typography-font-family-mono);
+  font-size: var(--dt-typography-small-size);
+  padding: 1px var(--dt-spacing-6);
+  border-radius: var(--dt-border-radius-field-default);
+  background: var(--dt-colors-background-surface-default);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  white-space: normal;
+  word-break: break-word;
+}
+.dma-code--from { color: var(--dt-colors-text-subdued-default); text-decoration: line-through; }
+.dma-code--to   { color: var(--dt-colors-text-success-default); border-color: var(--dt-colors-border-success-default); }
+
+.dma-failure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-background-warning-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+
+.dma-exclusion--kept {
+  border-color: var(--dt-colors-border-info-default);
+  border-left: 3px solid var(--dt-colors-background-info-default);
+}
+
+.dma-verdict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-verdict--blocked { border-top-color: var(--dt-colors-background-critical-default); }
+.dma-verdict--rework  { border-top-color: var(--dt-colors-background-warning-default); }
+
+.dma-timeline {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dma-version {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-12) 0 var(--dt-spacing-12) var(--dt-spacing-4);
+}
+.dma-version__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-surface-default);
+  border: 2px solid var(--dt-colors-border-neutral-emphasized);
+}
+/* Connector runs from under one dot to the next, so it stops at the last. */
+.dma-version:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--dt-spacing-4) + 5px);
+  top: 32px;
+  bottom: -18px;
+  width: 1px;
+  transform: translateX(-50%);
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-version--current .dma-version__dot {
+  background: var(--dt-colors-background-success-default);
+  border-color: var(--dt-colors-background-success-default);
+}
+
+.dma-diffbar {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+.dma-select {
+  appearance: none;
+  padding: var(--dt-spacing-4) var(--dt-spacing-24) var(--dt-spacing-4) var(--dt-spacing-8);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-field-default);
+  background-color: var(--dt-colors-background-surface-default);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 11px center, right 6px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--dt-colors-text-primary-default);
+  font: inherit;
+  font-size: var(--dt-typography-small-size);
+  cursor: pointer;
+}
+.dma-select:hover { background-color: var(--dt-colors-background-container-hover); }
+
+.dma-diff {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-diff__values {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  flex-wrap: wrap;
+}
+
+/* --- Global Mapping -------------------------------------------------------
+   A rule block, a cascade layer, and the rule-set confirmation gate. */
+.dma-rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-rule--edited { border-left-color: var(--dt-colors-background-warning-default); }
+
+.dma-rule__value {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+/* The label column is fixed so "Suggested" and "In effect" stack into a
+   readable two-row before/after rather than drifting with content width. */
+.dma-rule__value > :first-child { flex: 0 0 64px; }
+
+.dma-layer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-layer--readonly {
+  border-style: dashed;
+  background: var(--dt-colors-background-surface-default);
+}
+.dma-layer__num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--dt-border-radius-pill);
+  background: var(--dt-colors-background-container-neutral-default);
+  color: var(--dt-colors-text-secondary-default);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.dma-action--needsinput { border-left-color: var(--dt-colors-background-warning-default); }
+
+.dma-gate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-gate--blocked {
+  border-color: var(--dt-colors-border-critical-default);
+  background: var(--dt-colors-background-critical-subdued);
+}
+
+.dma-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  width: 100%;
+  padding: var(--dt-spacing-12);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-choice:hover { border-color: var(--dt-colors-primary-hover); }
+.dma-choice:focus-visible {
+  outline: 2px solid var(--dt-colors-primary-default);
+  outline-offset: 2px;
+}
+.dma-choice--selected {
+  border-color: var(--dt-colors-primary-default);
+  box-shadow: inset 0 0 0 1px var(--dt-colors-primary-default);
+  background: var(--dt-colors-primary-subdued);
+}
+
+.dma-delta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+
+/* --- Prioritize & Plan --------------------------------------------------- */
+
+.dma-appcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-appcard--changed {
+  border-left-color: var(--dt-colors-background-warning-default);
+  background: var(--dt-colors-background-warning-subdued);
+}
+
+/* Two-column card grid for applications and orphan groups. */
+.dma-appgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-12);
+}
+
+/* Segmented tier picker. Shared shape with .dma-movepick and .dma-orphan__opt:
+   a row of small pressable options where exactly one is on. */
+.dma-tierpick { display: flex; flex-wrap: wrap; gap: var(--dt-spacing-6); }
+.dma-tierpick__opt {
+  padding: var(--dt-spacing-4) var(--dt-spacing-12);
+  font: inherit;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+  cursor: pointer;
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-pill);
+  background: transparent;
+}
+.dma-tierpick__opt:hover { background: var(--dt-colors-background-container-hover); }
+.dma-tierpick__opt:focus-visible {
+  outline: 2px solid var(--dt-colors-primary-default);
+  outline-offset: 1px;
+}
+.dma-tierpick__opt--on {
+  color: var(--dt-colors-text-onbold-default);
+  border-color: transparent;
+  font-weight: var(--dt-typography-weight-bold);
+}
+.dma-tierpick__opt--on[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-tierpick__opt--on[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+.dma-tierpick__opt--on[data-tone="info"]     { background: var(--dt-colors-background-info-default); }
+.dma-tierpick__opt--on[data-tone="neutral"] {
+  background: var(--dt-colors-background-container-neutral-emphasized);
+  border-color: var(--dt-colors-border-neutral-emphasized);
+  color: var(--dt-colors-text-primary-default);
+}
+
+/* Dependency promotion — an application shipping earlier than it was declared. */
+.dma-promote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-6) var(--dt-spacing-8);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-primary-subdued, var(--dt-colors-background-container-neutral-subdued));
+  color: var(--dt-colors-text-primary-default);
+  font-size: var(--dt-typography-small-size);
+}
+.dma-promote > span:first-child,
+.dma-violation > span:first-child,
+.dma-waveorphan > span:first-child { flex: none; margin-top: 2px; }
+
+/* --- Orphan queue --------------------------------------------------------
+   State is carried on the left border so the three dispositions are legible
+   without reading the badges. */
+.dma-orphan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-orphan--pending {
+  border-left-color: var(--dt-colors-background-warning-default);
+  background: var(--dt-colors-background-warning-subdued);
+}
+.dma-orphan--assigned { border-left-color: var(--dt-colors-background-success-default); }
+.dma-orphan--out-of-scope { opacity: 0.72; }
+
+.dma-orphan__opt,
+.dma-movepick__opt,
+.dma-wave__move {
+  min-width: 26px;
+  padding: var(--dt-spacing-2) var(--dt-spacing-6);
+  font: inherit;
+  font-size: var(--dt-typography-small-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--dt-colors-text-secondary-default);
+  cursor: pointer;
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-orphan__opt:hover,
+.dma-movepick__opt:hover,
+.dma-wave__move:hover:not(:disabled) { background: var(--dt-colors-background-container-hover); }
+.dma-orphan__opt:focus-visible,
+.dma-movepick__opt:focus-visible,
+.dma-wave__move:focus-visible {
+  outline: 2px solid var(--dt-colors-primary-default);
+  outline-offset: 1px;
+}
+.dma-orphan__opt--on,
+.dma-movepick__opt--on {
+  background: var(--dt-colors-primary-default);
+  border-color: var(--dt-colors-primary-default);
+  color: var(--dt-colors-text-onbold-default);
+  font-weight: var(--dt-typography-weight-bold);
+}
+.dma-orphan__opt--drop { min-width: 0; }
+.dma-orphan__opt--drop.dma-orphan__opt--on {
+  background: var(--dt-colors-background-container-neutral-emphasized);
+  border-color: var(--dt-colors-border-neutral-emphasized);
+  color: var(--dt-colors-text-primary-default);
+}
+
+.dma-movepick { display: flex; flex-wrap: wrap; gap: var(--dt-spacing-4); flex: none; }
+
+.dma-wave__move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dma-wave__move:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.dma-wave__head { display: flex; align-items: center; gap: var(--dt-spacing-12); }
+
+.dma-wave__empty {
+  padding: var(--dt-spacing-12);
+  border: 1px dashed var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  color: var(--dt-colors-text-subdued-default);
+  font-size: var(--dt-typography-small-size);
+}
+
+.dma-waveorphan,
+.dma-violation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-6) var(--dt-spacing-8);
+  border-radius: var(--dt-border-radius-container-default);
+  font-size: var(--dt-typography-small-size);
+}
+.dma-waveorphan {
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-violation {
+  background: var(--dt-colors-background-critical-subdued);
+  color: var(--dt-colors-text-critical-default);
+}
+
+.dma-reconcile {
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border: 1px dashed var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+
+.dma-details > summary {
+  cursor: pointer;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+  padding: var(--dt-spacing-4) 0;
+}
+.dma-details > summary:focus-visible {
+  outline: 2px solid var(--dt-colors-primary-default);
+  outline-offset: 2px;
+}
+
+.dma-wave {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+/* No per-phase tint. Phase names are now just names the EPM can change, so
+   keying a colour off "Foundation" or "Cleanup" would break the moment a wave
+   is renamed or a seventh is added. The only wave modifier left is a state. */
+.dma-wave--broken {
+  border-color: var(--dt-colors-border-critical-default);
+  border-top-color: var(--dt-colors-background-critical-default);
+}
+
+.dma-wave__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  font-weight: var(--dt-typography-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.dma-waveapp {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+/* An application sitting in a wave of a different priority tier. */
+.dma-waveapp--off {
+  border-left: 3px solid var(--dt-colors-primary-default);
+  padding-left: var(--dt-spacing-8);
+}
+
+.dma-owner { display: flex; align-items: center; gap: var(--dt-spacing-8); }
+.dma-owner__initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-bold);
+  color: var(--dt-colors-text-secondary-default);
+}
+/* The one accountable owner, against any number of contributors. */
+.dma-owner__initials--lead {
+  background: var(--dt-colors-primary-default);
+  border-color: var(--dt-colors-primary-default);
+  color: var(--dt-colors-text-onbold-default);
+}
+
+/* --- Wave Mapping ---------------------------------------------------------
+   Prefixed .dma-wm so restyling this stage cannot reach Prioritize & Plan or
+   Global Mapping. The cascade primitives in .dma-layer are shared on purpose —
+   that concept belongs to data/mapping.js, not to either module.
+   ------------------------------------------------------------------------- */
+.dma-wm__dot {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-wm__dot[data-tone="primary"]  { background: var(--dt-colors-primary-default); }
+.dma-wm__dot[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-wm__dot[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+
+.dma-wm__val {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--dt-typography-small-size);
+}
+.dma-wm__val--none {
+  color: var(--dt-colors-text-subdued-default);
+  font-style: italic;
+}
+
+.dma-wm__field {
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+
+.dma-wm__layer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-4) var(--dt-spacing-8);
+  border: 1px dashed var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-base-default);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-wm__layer--wins {
+  border-style: solid;
+  border-color: var(--dt-colors-primary-default);
+  color: var(--dt-colors-text-primary-default);
+}
+.dma-wm__layer--none {
+  border-color: var(--dt-colors-border-critical-default);
+  color: var(--dt-colors-text-critical-default);
+}
+
+.dma-wm__debt,
+.dma-wm__late {
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-warning-default);
+  border-left: 3px solid var(--dt-colors-background-warning-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-warning-subdued);
+}
+.dma-wm__late {
+  border-color: var(--dt-colors-border-critical-default);
+  border-left-color: var(--dt-colors-background-critical-default);
+  background: var(--dt-colors-background-critical-subdued);
+}
+
+.dma-wm__gate {
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-wm__gate--clear   { border-left-color: var(--dt-colors-background-success-default); }
+.dma-wm__gate--blocked { border-left-color: var(--dt-colors-background-critical-default); }
+
+/* --- Calibrate ------------------------------------------------------------
+   Prefixed .dma-cal. The strip is the only persistent element on the stage:
+   it sits above the stepper and survives every step change, because "how far
+   has the run got" is not a property of the step you happen to be reading. */
+
+.dma-calstrip {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+/* The run column is deliberately twice the width of the other two. All three
+   measures are needed, but only one of them is the thing you are waiting on. */
+.dma-calstrip__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  min-width: 0;
+}
+.dma-calstrip__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  min-width: 0;
+  padding-left: var(--dt-spacing-16);
+  border-left: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dma-calstrip__pred { flex: none; text-align: right; align-items: flex-end; }
+.dma-calstrip__big {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Phase boundaries drawn onto the bar rather than beside it. The four phases
+   have visibly different widths because they take visibly different amounts of
+   time — an even four-way split is the standard progress-bar lie. */
+.dma-calrun { position: relative; }
+.dma-calrun__ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dma-calrun__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--dt-colors-background-base-default);
+  opacity: 0.65;
+}
+
+.dma-calphases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--dt-spacing-8);
+}
+.dma-calphase {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  min-width: 0;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-calphase__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-calphase[data-state="done"]   { color: var(--dt-colors-text-secondary-default); }
+.dma-calphase[data-state="done"] .dma-calphase__dot { background: var(--dt-colors-background-success-default); }
+.dma-calphase[data-state="active"] { color: var(--dt-colors-text-primary-default); font-weight: var(--dt-typography-weight-bold); }
+.dma-calphase[data-state="active"] .dma-calphase__dot { background: var(--dt-colors-primary-default); }
+
+/* Stratification: three bars per bucket — estate, the drawn sample, and what
+   scan order would have produced. The third is the whole argument. */
+.dma-calstrat {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--dt-spacing-12);
+  align-items: center;
+}
+.dma-calstrat__bars { display: flex; flex-direction: column; gap: var(--dt-spacing-4); min-width: 0; }
+.dma-calstrat__row {
+  display: grid;
+  grid-template-columns: 76px 1fr 52px;
+  gap: var(--dt-spacing-8);
+  align-items: center;
+}
+.dma-calstrat__n { text-align: right; color: var(--dt-colors-text-subdued-default); }
+
+.dma-calcompare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-success-default);
+  border-top: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-calcompare--bad {
+  border-color: var(--dt-colors-border-critical-default);
+  border-top-color: var(--dt-colors-background-critical-default);
+}
+
+/* A profile entry. The left border is the state, because "corrected" and
+   "rejected" are the entries a reviewer is scanning for — a learned
+   convention nobody disputed needs no emphasis at all. */
+.dma-calentry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-calentry--corrected { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-calentry--rejected  { border-left-color: var(--dt-colors-background-critical-default); }
+
+/* The reason a human overruled the machine. Indented because it is testimony
+   about the entry above it, not another entry. */
+.dma-calwhy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+
+/* --- Translate ------------------------------------------------------------
+   Prefixed .dma-tr. The strip shares Calibrate's construction but not its
+   stylesheet: both stages animate a run, and the moment one of them needs a
+   different shape the shared rule would have to be forked anyway. Duplication
+   here is the isolation rule being paid for, deliberately. */
+
+/* The selected wave, above the stepper. It is a header, not a card — the
+   wave is the subject of every panel below it, not a thing on the page. */
+.dma-trwave {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+  padding-bottom: var(--dt-spacing-4);
+}
+
+.dma-trstrip {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-default);
+}
+.dma-trstrip__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  min-width: 0;
+}
+.dma-trstrip__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  min-width: 0;
+  padding-left: var(--dt-spacing-16);
+  border-left: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dma-trstrip__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dt-spacing-12);
+  min-width: 0;
+}
+.dma-trstrip__big {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Phase boundaries drawn onto the bar. The four phases have visibly
+   different widths because they take visibly different amounts of time. */
+.dma-trrun { position: relative; }
+.dma-trrun__ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.dma-trrun__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--dt-colors-background-base-default);
+  opacity: 0.65;
+}
+
+.dma-trphases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--dt-spacing-8);
+}
+.dma-trphase {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  min-width: 0;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-trphase__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-trphase[data-state="done"] { color: var(--dt-colors-text-secondary-default); }
+.dma-trphase[data-state="done"] .dma-trphase__dot { background: var(--dt-colors-background-success-default); }
+.dma-trphase[data-state="active"] { color: var(--dt-colors-text-primary-default); font-weight: var(--dt-typography-weight-bold); }
+.dma-trphase[data-state="active"] .dma-trphase__dot { background: var(--dt-colors-primary-default); }
+
+/* The three live counters. `failed` is the one worth watching: it climbs
+   through the translate phase and falls through the retry phase. */
+.dma-trcounts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dt-spacing-8);
+}
+.dma-trcount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-left: var(--dt-spacing-8);
+  border-left: 2px solid var(--dt-colors-border-neutral-emphasized);
+}
+.dma-trcount[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+.dma-trcount[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-trcount[data-tone="info"]     { border-left-color: var(--dt-colors-background-info-default); }
+.dma-trcount__n {
+  font-size: var(--dt-typography-heading-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+.dma-trcount__l {
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+
+/* 2,584 vs 371. Two columns, the prerequisite one visibly demoted, because
+   the point is that they are not the same kind of thing. */
+.dma-trsplit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+}
+.dma-trsplit__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-primary-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trsplit__col--muted {
+  border-top-color: var(--dt-colors-border-neutral-emphasized);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-trsplit__n {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+.dma-trsplit__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--dt-spacing-8);
+  font-size: var(--dt-typography-small-size);
+}
+
+/* A pre-flight check. State on the left mark, so a reader scanning for the
+   thing that is stopping them does not have to read the labels. */
+.dma-trcheck {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trcheck[data-status="warning"] { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-trcheck[data-status="blocked"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-trcheck__mark {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-success-default);
+}
+.dma-trcheck[data-status="warning"] .dma-trcheck__mark { color: var(--dt-colors-text-warning-default); }
+.dma-trcheck[data-status="blocked"] .dma-trcheck__mark { color: var(--dt-colors-text-critical-default); }
+
+.dma-trheld {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-16);
+  flex-wrap: wrap;
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-warning-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+
+.dma-trmodel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trmodel__bar {
+  height: 6px;
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  overflow: hidden;
+}
+.dma-trmodel__fill { height: 100%; background: var(--dt-colors-border-neutral-emphasized); }
+.dma-trmodel__fill[data-tone="info"]    { background: var(--dt-colors-background-info-default); }
+.dma-trmodel__fill[data-tone="warning"] { background: var(--dt-colors-background-warning-default); }
+
+/* Reason rows: a count, then what it was. The count leads because the
+   argument the card is making is about the distribution, not the labels. */
+.dma-trwhy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+}
+.dma-trwhy__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-trwhy__n {
+  flex: none;
+  min-width: 36px;
+  text-align: right;
+  font-weight: var(--dt-typography-weight-bold);
+}
+
+/* The context the retry injected, shown verbatim. */
+.dma-trinject {
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-background-info-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  font-family: var(--dt-typography-font-family-mono);
+  font-size: var(--dt-typography-small-size);
+  white-space: pre-wrap;
+}
+
+/* Tiles. One row per panel — the unit the work is actually estimated in. */
+.dma-trtiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+}
+.dma-trtile {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trtile[data-state="blocked"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-trtile__n {
+  flex: none;
+  min-width: 20px;
+  text-align: right;
+  color: var(--dt-colors-text-subdued-default);
+  font-size: var(--dt-typography-small-size);
+}
+
+/* Type tabs and filters inside a flush card. */
+.dma-trtoolbar {
+  padding: var(--dt-spacing-12) var(--dt-spacing-16) 0;
+}
+.dma-trtabs {
+  display: flex;
+  gap: var(--dt-spacing-4);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+}
+.dma-trtab {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--dt-colors-text-secondary-default);
+  font: inherit;
+  font-size: var(--dt-typography-base-size);
+  cursor: pointer;
+}
+.dma-trtab:hover { color: var(--dt-colors-text-primary-default); }
+.dma-trtab[aria-selected="true"] {
+  color: var(--dt-colors-text-primary-default);
+  font-weight: var(--dt-typography-weight-bold);
+  border-bottom-color: var(--dt-colors-primary-default);
+}
+.dma-trtab__n {
+  padding: 1px var(--dt-spacing-6);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-subdued-default);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-regular);
+}
+.dma-trfilters {
+  display: flex;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+}
+.dma-trfilters .dt-input:first-child { flex: 1 1 auto; min-width: 0; }
+.dma-trfilters .dt-input + .dt-input { flex: none; width: 200px; }
+.dma-trfoot {
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border-top: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+
+/* Where the wave goes next. Three destinations, one of which is not a
+   destination at all — held assets have not left this stage. */
+.dma-trroute {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dt-spacing-12);
+}
+.dma-trroute__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trroute__card[data-tone="success"]  { border-top-color: var(--dt-colors-background-success-default); }
+.dma-trroute__card[data-tone="critical"] { border-top-color: var(--dt-colors-background-critical-default); }
+.dma-trroute__card[data-tone="warning"]  { border-top-color: var(--dt-colors-background-warning-default); }
+.dma-trroute__n {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+
+/* 93.9% beside 81.2%, because the two are only confusable side by side. */
+.dma-trcompare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+  margin-bottom: var(--dt-spacing-12);
+}
+.dma-trcompare__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-primary-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-trcompare__side--next {
+  border-left-color: var(--dt-colors-border-neutral-emphasized);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-trcompare__n {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+
+/* --- Validate -------------------------------------------------------------
+   Prefixed .dma-va. Several of these shapes rhyme with Translate's (.dma-tr)
+   and are still written out in full: the isolation rule means a module's CSS
+   must be deletable with the module, and a shared .dma-tabs would quietly
+   couple two stages that are going to diverge the first time one of them
+   needs a different control in the strip. */
+
+.dma-vawave {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+  padding-bottom: var(--dt-spacing-4);
+}
+
+/* The confidence score, as a number. See the note in index.js: a bar would
+   invite "about 70%, close enough", and the entire argument of the threshold
+   is that 0.89 and 0.91 are different decisions. */
+.dma-vaconf {
+  font-weight: var(--dt-typography-weight-bold);
+  font-size: var(--dt-typography-base-size);
+}
+
+/* The written finding — PRD F-5. Toned by classification so a reader scanning
+   a column of these can see which ones are admissions rather than diffs. */
+.dma-vafinding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-vafinding[data-tone="warning"]  { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-vafinding[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+
+/* The finding again, flattened into a table cell. Two lines, then clipped —
+   the full text is on the row's title and in the record. */
+.dma-vatrunc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 46ch;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+}
+
+/* Signals that applied, and signals that could not. The inapplicable ones are
+   drawn rather than omitted: "this was scored on three of five" is a claim
+   about rigour, and hiding the other two turns it into an unexplained number. */
+.dma-vasigs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+}
+.dma-vasig {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+  color: var(--dt-colors-text-success-default);
+}
+.dma-vasig[data-on="false"] {
+  border-left-color: var(--dt-colors-border-neutral-emphasized);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-vasig .dt-stack { color: var(--dt-colors-text-primary-default); }
+.dma-vasig[data-on="false"] .dt-stack { color: var(--dt-colors-text-subdued-default); }
+
+/* Signal × asset type. */
+.dma-vamatrix {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  overflow: hidden;
+}
+.dma-vamatrix__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, 110px);
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-top: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dma-vamatrix__row:first-child { border-top: 0; }
+.dma-vamatrix__row--head {
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-vamatrix__th {
+  text-align: center;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-vamatrix__cell {
+  display: flex;
+  justify-content: center;
+  color: var(--dt-colors-text-success-default);
+}
+.dma-vamatrix__cell[data-on="false"] { color: var(--dt-colors-border-neutral-emphasized); }
+
+/* The three classifications, as a legend with weight. */
+.dma-vaclasses {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dt-spacing-12);
+}
+.dma-vaclass {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-vaclass[data-tone="warning"]  { border-top-color: var(--dt-colors-background-warning-default); }
+.dma-vaclass[data-tone="critical"] { border-top-color: var(--dt-colors-background-critical-default); }
+.dma-vaclass__n {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+
+/* The audit trail — PRD F-7. A spine with dots, because the thing being
+   asserted is that nothing was inserted between two entries. */
+.dma-vaaudit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+  padding-left: var(--dt-spacing-16);
+}
+.dma-vaaudit::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-vaaudit__row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+}
+.dma-vaaudit__dot {
+  position: absolute;
+  left: calc(-1 * var(--dt-spacing-16) + 1px);
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dt-colors-border-neutral-emphasized);
+}
+.dma-vaaudit__row[data-tone="success"]  .dma-vaaudit__dot { background: var(--dt-colors-background-success-default); }
+.dma-vaaudit__row[data-tone="warning"]  .dma-vaaudit__dot { background: var(--dt-colors-background-warning-default); }
+.dma-vaaudit__row[data-tone="critical"] .dma-vaaudit__dot { background: var(--dt-colors-background-critical-default); }
+.dma-vaaudit__row[data-tone="info"]     .dma-vaaudit__dot { background: var(--dt-colors-background-info-default); }
+
+/* Type tabs and filters inside a flush card. */
+.dma-vatoolbar { padding: var(--dt-spacing-12) var(--dt-spacing-16) 0; }
+.dma-vatabs {
+  display: flex;
+  gap: var(--dt-spacing-4);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-default);
+  flex-wrap: wrap;
+}
+.dma-vatab {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--dt-colors-text-secondary-default);
+  font: inherit;
+  font-size: var(--dt-typography-base-size);
+  cursor: pointer;
+}
+.dma-vatab:hover { color: var(--dt-colors-text-primary-default); }
+.dma-vatab[aria-selected="true"] {
+  color: var(--dt-colors-text-primary-default);
+  font-weight: var(--dt-typography-weight-bold);
+  border-bottom-color: var(--dt-colors-primary-default);
+}
+.dma-vatab__n {
+  padding: 1px var(--dt-spacing-6);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-subdued-default);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-regular);
+}
+.dma-vafilters {
+  display: flex;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+}
+.dma-vafoot {
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border-top: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+
+/* Row actions. Kept on one line and right-aligned so the two verbs read as a
+   choice rather than a sequence. */
+.dma-vaactions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--dt-spacing-6);
+  flex-wrap: wrap;
+}
+
+/* Two things side by side where the right-hand one is the heavier choice. */
+.dma-vatwo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+  margin-bottom: var(--dt-spacing-12);
+}
+.dma-vatwo__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-vatwo__side--heavy {
+  border-left-color: var(--dt-colors-background-warning-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-vatwo__n {
+  font-size: var(--dt-typography-display-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+
+/* A live asset a human failed. Critical border because these are the only
+   rows on the stage describing something that is wrong right now. */
+.dma-vafail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-critical-default);
+  border-left: 3px solid var(--dt-colors-background-critical-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+
+/* The accuracy ledger. Count leads, because the argument is the distribution. */
+.dma-valedger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+}
+.dma-valedger__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-valedger__row[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+.dma-valedger__row[data-tone="info"]     { border-left-color: var(--dt-colors-background-info-default); }
+.dma-valedger__row[data-tone="warning"]  { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-valedger__row[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-valedger__n {
+  flex: none;
+  min-width: 56px;
+  text-align: right;
+  font-weight: var(--dt-typography-weight-bold);
+}
+
+/* Where the stage hands off. */
+.dma-varoute {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dt-spacing-12);
+}
+.dma-varoute__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  align-items: flex-start;
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-varoute__card[data-tone="success"]  { border-top-color: var(--dt-colors-background-success-default); }
+.dma-varoute__card[data-tone="warning"]  { border-top-color: var(--dt-colors-background-warning-default); }
+.dma-varoute__card[data-tone="critical"] { border-top-color: var(--dt-colors-background-critical-default); }
+.dma-varoute__n {
+  font-size: var(--dt-typography-heading-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+
+/* --- Exceptions -----------------------------------------------------------
+   Prefixed .dma-ex. This is the only stage where a person writes the
+   translation, so it is the only stage whose CSS has to make editable surfaces
+   look editable and read-only evidence look read-only — the SPL pane and the
+   DQL pane sit next to each other and must not be confusable.
+
+   As with .dma-va and .dma-tr, shapes that rhyme with other modules are
+   written out in full rather than shared: a module's CSS has to be deletable
+   with the module. */
+
+/* The wave strip above the stepper. */
+.dma-exwave {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+  padding-bottom: var(--dt-spacing-4);
+}
+
+/* --- Step 1: the queue ---------------------------------------------------- */
+
+/* One card per inlet. Four inlets, because the fourth — "no automated path" —
+   is a different kind of work, not a worse version of the other three, and
+   flattening it into a single "failed" number is what hides it. */
+.dma-exinlet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  align-items: flex-start;
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-top: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-exinlet[data-tone="info"]     { border-top-color: var(--dt-colors-background-info-default); }
+.dma-exinlet[data-tone="warning"]  { border-top-color: var(--dt-colors-background-warning-default); }
+.dma-exinlet[data-tone="critical"] { border-top-color: var(--dt-colors-background-critical-default); }
+.dma-exinlet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+}
+.dma-exinlet__n {
+  font-size: var(--dt-typography-heading-size);
+  font-weight: var(--dt-typography-weight-bold);
+  line-height: 1.1;
+}
+/* The remedy line. Subdued and arrowed: it is what happens next, not a label. */
+.dma-exinlet__foot {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-6);
+  margin-top: auto;
+  padding-top: var(--dt-spacing-6);
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+
+/* The lifecycle strip. Every cell is a filter — clicking "Sent back 12" is the
+   fastest way to answer "what is waiting on someone else", so the counts are
+   controls rather than a read-out. */
+.dma-exlife {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--dt-spacing-8);
+}
+.dma-exlife__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-2);
+  align-items: flex-start;
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dt-motion-duration-fast) var(--dt-motion-easing-default);
+}
+.dma-exlife__cell:hover { background: var(--dt-colors-background-container-neutral-subdued); }
+.dma-exlife__cell[data-tone="info"]     { border-left-color: var(--dt-colors-background-info-default); }
+.dma-exlife__cell[data-tone="warning"]  { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-exlife__cell[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-exlife__cell[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+.dma-exlife__cell[aria-pressed="true"] {
+  background: var(--dt-colors-background-container-neutral-default);
+  border-color: var(--dt-colors-primary-default);
+}
+.dma-exlife__n {
+  font-size: var(--dt-typography-base-size);
+  font-weight: var(--dt-typography-weight-bold);
+}
+.dma-exlife__l {
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+}
+
+/* Three selects and a Clear. The selects are width:100% by design-system
+   default, so they are given a basis here — without it flex-wrap puts each one
+   on a line of its own and the filter row becomes taller than the table. */
+.dma-exfilters {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+.dma-exfilters .dt-input {
+  flex: 1 1 180px;
+  width: auto;
+  min-width: 150px;
+  max-width: 260px;
+}
+
+/* Progress inside a table row: "9/12" plus a hairline bar. Small on purpose —
+   the row's job is the asset name, not the arithmetic. */
+.dma-exmini {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  min-width: 108px;
+}
+.dma-exmini .dt-progress { flex: 1; }
+
+/* --- Step 2: the workspace ------------------------------------------------ */
+
+/* The asset header: identity on the left, the actions that move the whole
+   asset on the right. Send back lives here rather than on a tile because it is
+   a statement about the asset, not about one panel. */
+.dma-exhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--dt-spacing-16);
+  flex-wrap: wrap;
+  padding: var(--dt-spacing-12) var(--dt-spacing-16);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+
+/* Why this row is in the queue at all. Toned by inlet. */
+.dma-exorigin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-background-info-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-exorigin[data-tone="warning"]  { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-exorigin[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-exorigin[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+
+/* Rail + pane. Only dashboards get this; a one-item rail is a frame around
+   nothing, so single-query assets render the pane alone. */
+.dma-exwork {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--dt-spacing-16);
+  align-items: start;
+}
+
+.dma-extiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-8);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  /* Sticky, because the pane below a twelve-panel dashboard is long and the
+     rail is how you know which of the twelve you are looking at. Scrolling it
+     off the top turns the pane into an unlabelled query editor. */
+  position: sticky;
+  top: var(--dt-spacing-4);
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+.dma-extiles__head {
+  padding: var(--dt-spacing-4) var(--dt-spacing-8);
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-bold);
+  color: var(--dt-colors-text-subdued-default);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dma-extile {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  width: 100%;
+  padding: var(--dt-spacing-8);
+  border: 1px solid transparent;
+  border-radius: var(--dt-border-radius-container-default);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dma-extile:hover { background: var(--dt-colors-background-container-neutral-subdued); }
+.dma-extile[aria-current="true"] {
+  background: var(--dt-colors-background-container-neutral-default);
+  border-color: var(--dt-colors-primary-default);
+}
+.dma-extile__n {
+  flex: none;
+  width: 22px;
+  text-align: right;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-extile__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.dma-extile__name { font-size: var(--dt-typography-small-size); }
+.dma-extile__type { color: var(--dt-colors-text-subdued-default); }
+.dma-extile__mark { flex: none; }
+.dma-extile[data-state="validated"] .dma-extile__mark { color: var(--dt-colors-text-success-default); }
+.dma-extile[data-state="blocked"]   .dma-extile__mark { color: var(--dt-colors-text-critical-default); }
+
+/* The original SPL, with the parts that did not survive marked in place. The
+   marks are the argument: "unsupported" on the exact token is a different
+   claim from "this query failed". */
+.dma-exspl {
+  margin: 0;
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  font-family: var(--dt-typography-font-family-mono);
+  font-size: var(--dt-typography-small-size);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+.dma-extok { border-radius: 3px; padding: 1px 0; }
+.dma-extok[data-kind="partial"] {
+  background: var(--dt-colors-background-warning-subdued);
+  color: var(--dt-colors-text-warning-default);
+  box-shadow: 0 1px 0 var(--dt-colors-background-warning-default);
+}
+.dma-extok[data-kind="unsupported"] {
+  background: var(--dt-colors-background-critical-subdued);
+  color: var(--dt-colors-text-critical-default);
+  box-shadow: 0 1px 0 var(--dt-colors-background-critical-default);
+}
+.dma-extok[data-kind="var"] {
+  background: var(--dt-colors-background-info-subdued);
+  color: var(--dt-colors-text-info-default);
+}
+.dma-extok[data-kind="macro"] {
+  background: var(--dt-colors-background-container-neutral-default);
+  color: var(--dt-colors-text-primary-default);
+  box-shadow: 0 1px 0 var(--dt-colors-border-neutral-emphasized);
+}
+.dma-exlegend {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-16);
+  flex-wrap: wrap;
+}
+.dma-exlegend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+}
+/* The swatches. "Supported" has no mark inside the SPL itself — unmarked IS
+   the signal — so in the legend it gets an outline only, which is the closest
+   a swatch can come to drawing the absence of a mark. */
+.dma-exlegend__item .dma-extok {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+}
+.dma-exlegend__item .dma-extok[data-kind="ok"] {
+  border: 1px dashed var(--dt-colors-border-neutral-emphasized);
+}
+
+/* The context box — Charles's ask. Bordered as a first-class input rather than
+   a note field: what goes in here is the input to the next translation, so it
+   has to read as something the machine will act on. */
+.dma-exbox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-primary-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-primary-subdued);
+}
+.dma-exbox__head {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+}
+.dma-exbox__input {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* The DQL editor. Same shape, neutral border — the box above says what you
+   want, this one says what will run. */
+.dma-exdql {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-exdql__input {
+  width: 100%;
+  resize: vertical;
+  line-height: 1.7;
+  font-size: var(--dt-typography-small-size);
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+/* What the query returned. Tone carries the verdict so the row reads before
+   the sentence does. */
+.dma-exresult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-exresult[data-state="ok"]    { color: var(--dt-colors-text-success-default); }
+.dma-exresult[data-state="error"] {
+  border-left-color: var(--dt-colors-background-critical-default);
+  color: var(--dt-colors-text-critical-default);
+}
+.dma-exresult .dt-text-subdued,
+.dma-exresult .dt-text-secondary { color: var(--dt-colors-text-secondary-default); }
+
+/* The named reason a tile is blocked. Not a generic failure — the label is the
+   Splunk construct, and the detail is why it has no mechanical equivalent. */
+.dma-exblocker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-background-warning-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-exblocker[data-tone="info"]     { border-left-color: var(--dt-colors-background-info-default); }
+.dma-exblocker[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+.dma-exblocker[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+
+/* One round of retranslation, kept verbatim with what it produced. Three
+   rounds that all came back "still failing" is the most useful thing this pane
+   can tell the next person to open the asset, so nothing is collapsed. */
+.dma-exattempt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-exattempt[data-tone="success"]  { border-left-color: var(--dt-colors-background-success-default); }
+.dma-exattempt[data-tone="warning"]  { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-exattempt[data-tone="critical"] { border-left-color: var(--dt-colors-background-critical-default); }
+/* The context as it was written. Quoted, because it is the operator's words. */
+.dma-exattempt__ctx {
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-left: 2px solid var(--dt-colors-border-neutral-emphasized);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+  font-size: var(--dt-typography-small-size);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+/* The six note sections. Two columns so the pane does not become a scroll. */
+.dma-exnotes {
+  display: grid;
+  grid-template-columns: 136px minmax(0, 1fr);
+  gap: var(--dt-spacing-6) var(--dt-spacing-16);
+  margin: 0;
+}
+.dma-exnotes dt {
+  font-size: var(--dt-typography-small-size);
+  font-weight: var(--dt-typography-weight-bold);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-exnotes dd {
+  margin: 0;
+  font-size: var(--dt-typography-small-size);
+  color: var(--dt-colors-text-secondary-default);
+}
+
+/* Review threads. An unresolved one is a warning on the pre-deploy check but
+   never a block — a conversation is not a defect. */
+.dma-excomment {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-background-warning-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-excomment[data-resolved="true"] {
+  border-left-color: var(--dt-colors-background-success-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-excomment__reply {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  margin-left: var(--dt-spacing-16);
+  padding-left: var(--dt-spacing-12);
+  border-left: 2px solid var(--dt-colors-border-neutral-emphasized);
+}
+
+/* --- Step 3: publish ------------------------------------------------------ */
+
+/* One pre-deploy check. Drawn whether it passes or not: the gate's credibility
+   comes from showing the four it cleared alongside the one it did not. */
+.dma-excheck {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-background-success-default);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-excheck[data-state="warn"] { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-excheck[data-state="fail"] { border-left-color: var(--dt-colors-background-critical-default); }
+.dma-excheck__mark { flex: none; margin-top: 2px; color: var(--dt-colors-text-success-default); }
+.dma-excheck[data-state="warn"] .dma-excheck__mark { color: var(--dt-colors-text-warning-default); }
+.dma-excheck[data-state="fail"] .dma-excheck__mark { color: var(--dt-colors-text-critical-default); }
+
+/* What gets embedded in the published query. Checkboxes, because in the target
+   state this is a decision per publish, not a global setting. */
+.dma-exopt {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-radius: var(--dt-border-radius-container-default);
+  cursor: pointer;
+}
+.dma-exopt:hover { background: var(--dt-colors-background-container-neutral-subdued); }
+.dma-exopt input { margin-top: 3px; flex: none; }
+
+/* --- Step 4: the record --------------------------------------------------- */
+
+/* Auto score against corrected score. A bar each, because the claim is the
+   size of the gap and not either number on its own. */
+.dma-exscale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+}
+.dma-exscale__row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+}
+.dma-exscale__row > span:last-child { text-align: right; }
+
+/* --- Deploy ---------------------------------------------------------------
+   Prefixed .dma-dp. This stage reports rather than acts, so almost everything
+   here is a shape for reading a proportion at a glance: one bar per wave, five
+   segments, one population. The bar is the module's whole argument — that the
+   health check holds a sliver of assets and not the wave — so it gets the
+   height and the legend rather than being a decoration under a number.
+
+   As with .dma-ex, .dma-va and .dma-tr, shapes that rhyme with other modules
+   are written out in full rather than shared: a module's CSS has to be
+   deletable with the module. */
+
+/* The wave strip above the stepper. */
+.dma-dpwavestrip {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+  padding-bottom: var(--dt-spacing-4);
+}
+
+/* --- Step 1: monitor ------------------------------------------------------ */
+
+/* Two wave cards per row at full width. Six of them is the estate view, and
+   two columns keeps each bar wide enough that a 3% segment is still visible —
+   which is the whole point of drawing it. */
+.dma-dpwaves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-16);
+}
+.dma-dpwaves--single { grid-template-columns: minmax(0, 1fr); }
+
+.dma-dpwave {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-8);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+/* A wave with nothing translated. Dimmed, because "no population yet" and "a
+   population of zero" must not look the same. */
+.dma-dpwave--idle {
+  background: transparent;
+  border-style: dashed;
+}
+.dma-dpwave__head {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+.dma-dpwave__stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dt-spacing-8);
+}
+.dma-dpwave__big {
+  font-size: var(--dt-typography-display-size);
+  line-height: 1.1;
+  font-weight: var(--dt-typography-weight-semibold);
+  color: var(--dt-colors-text-subdued-default);
+}
+.dma-dpwave__big--live { color: var(--dt-colors-text-success-default); }
+.dma-dpwave__foot {
+  display: flex;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+.dma-dpwave__foot:empty { display: none; }
+
+/* The deployment bar. Five segments, one population, no gaps — the data layer
+   derives the last segment by subtraction and asserts the sum on load. */
+.dma-dpbar {
+  display: flex;
+  height: 12px;
+  width: 100%;
+  border-radius: var(--dt-border-radius-container-default);
+  overflow: hidden;
+  background: var(--dt-colors-background-container-neutral-emphasized);
+}
+.dma-dpseg { display: block; height: 100%; }
+.dma-dpseg[data-tone="success"]  { background: var(--dt-colors-background-success-default); }
+.dma-dpseg[data-tone="info"]     { background: var(--dt-colors-background-info-default); }
+.dma-dpseg[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-dpseg[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+.dma-dpseg[data-tone="neutral"]  { background: var(--dt-colors-border-neutral-emphasized); }
+
+.dma-dplegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dt-spacing-6) var(--dt-spacing-16);
+  font-size: var(--dt-typography-small-size);
+  line-height: var(--dt-typography-small-line);
+}
+.dma-dplegend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+}
+.dma-dpswatch {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 2px;
+}
+.dma-dpswatch[data-tone="success"]  { background: var(--dt-colors-background-success-default); }
+.dma-dpswatch[data-tone="info"]     { background: var(--dt-colors-background-info-default); }
+.dma-dpswatch[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-dpswatch[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+.dma-dpswatch[data-tone="neutral"]  { background: var(--dt-colors-border-neutral-emphasized); }
+
+/* The destination. A wave's tenant is part of its state, not a constant, and
+   production has to be visibly different from staging at a glance. */
+.dma-dptenant {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: 2px var(--dt-spacing-8);
+  border-radius: var(--dt-border-radius-container-default);
+  font-size: var(--dt-typography-small-size);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  color: var(--dt-colors-text-secondary-default);
+}
+.dma-dptenant[data-tenant="prod"] {
+  border-color: var(--dt-colors-border-critical-default);
+  background: var(--dt-colors-background-critical-subdued);
+  color: var(--dt-colors-text-critical-default);
+}
+.dma-dptenant[data-tenant="nonprod"] {
+  border-color: var(--dt-colors-border-info-default);
+  background: var(--dt-colors-background-info-subdued);
+  color: var(--dt-colors-text-info-default);
+}
+
+/* One definition of one check. Drawn for all three whatever their state: the
+   gate's credibility comes from being readable when it is quiet. */
+.dma-dpcheck {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-subdued);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+  border-radius: var(--dt-border-radius-container-default);
+}
+.dma-dpcheck__icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--dt-colors-text-secondary-default);
+}
+
+/* The P1 metric. One figure, named denominator beside it. */
+.dma-dpmetric {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-16);
+  padding-bottom: var(--dt-spacing-12);
+  margin-bottom: var(--dt-spacing-12);
+  border-bottom: 1px solid var(--dt-colors-border-neutral-subdued);
+}
+.dma-dpmetric__fig {
+  font-size: var(--dt-typography-display-size);
+  line-height: 1;
+  font-weight: var(--dt-typography-weight-semibold);
+}
+
+/* The reconciliation ledger: where one wave's publish population comes from.
+   Right-aligned figures in a fixed column so the subtraction reads down. */
+.dma-dprec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  margin-bottom: var(--dt-spacing-12);
+}
+.dma-dprec__row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-4) 0;
+}
+.dma-dprec__row--rule {
+  border-top: 1px solid var(--dt-colors-border-neutral-default);
+  padding-top: var(--dt-spacing-8);
+  margin-top: var(--dt-spacing-4);
+}
+.dma-dprec__n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--dt-typography-weight-semibold);
+}
+
+/* --- Step 2: held --------------------------------------------------------- */
+
+.dma-dpfilters {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+}
+.dma-dpfilters .dt-input { width: auto; min-width: 150px; }
+
+/* --- Step 3: refused & wrong ---------------------------------------------- */
+
+/* Two failure modes side by side, because the argument is that they are not
+   the same failure and a stacked pair reads as a sequence. */
+.dma-dpsplit {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+}
+.dma-dpsplit__half {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding-left: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+}
+.dma-dpsplit__half:first-child { border-left-color: var(--dt-colors-background-warning-default); }
+.dma-dpsplit__half:last-child  { border-left-color: var(--dt-colors-background-critical-default); }
+
+/* --- Step 4: the record --------------------------------------------------- */
+
+.dma-dpevents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+}
+.dma-dpevent {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: var(--dt-spacing-12);
+  align-items: start;
+}
+.dma-dpevent__dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-neutral-default);
+}
+.dma-dpevent__dot[data-kind="deployed"]  { background: var(--dt-colors-background-success-default); }
+.dma-dpevent__dot[data-kind="resolved"]  { background: var(--dt-colors-background-success-default); }
+.dma-dpevent__dot[data-kind="submitted"] { background: var(--dt-colors-background-info-default); }
+.dma-dpevent__dot[data-kind="check"]     { background: var(--dt-colors-background-info-default); }
+.dma-dpevent__dot[data-kind="rejected"]  { background: var(--dt-colors-background-critical-default); }
+.dma-dpevent__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+}
+
+/* A standing design note, set apart from the prose around it. */
+.dma-dpnote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-8);
+  margin-top: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-dpnote > svg { flex: none; margin-top: 2px; color: var(--dt-colors-text-subdued-default); }
+
+/* --- Govern & Close -------------------------------------------------------
+   Prefixed .dma-gc. Two P3 features in one stage, and the visual job is to
+   keep them from looking like one thing: the flagging pass has already run and
+   has findings, the retention policy has never run and is a preview behind a
+   gate. So the flag types get cards with a number, and the gate gets a list of
+   dots that reads like an obstruction rather than a summary.
+
+   Everything here is a review surface — no progress bars, no completion rings.
+   A stage whose whole argument is "flagged, not fixed" should not be drawn
+   with the vocabulary of work being finished.
+
+   As with .dma-dp, .dma-ex and .dma-va, shapes that rhyme with other modules
+   are written out in full rather than shared: a module's CSS has to be
+   deletable with the module. */
+
+/* The project strip above the stepper. Estate-scoped, so it names the project
+   rather than a wave. */
+.dma-gcstrip {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+  padding-bottom: var(--dt-spacing-4);
+}
+
+/* A standing design note, set apart from the prose around it. */
+.dma-gcnote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dt-spacing-8);
+  margin-top: var(--dt-spacing-12);
+  padding: var(--dt-spacing-8) var(--dt-spacing-12);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+.dma-gcnote > svg { flex: none; margin-top: 2px; color: var(--dt-colors-text-subdued-default); }
+
+/* The two review buttons in a table's last column, and the decided state that
+   replaces them. Column, not row — "Not a duplicate" next to "Duplicate" at
+   table width wraps mid-word otherwise. */
+.dma-gcverdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--dt-spacing-6);
+}
+
+/* --- Step 1: organise ----------------------------------------------------- */
+
+/* The assets inside one duplicate cluster. Indented under the candidate title
+   so a four-asset cluster reads as one finding rather than four. */
+.dma-gccluster {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--dt-spacing-6);
+  padding-left: var(--dt-spacing-8);
+  border-left: 2px solid var(--dt-colors-border-neutral-default);
+}
+.dma-gccluster__item {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+
+/* Structural similarity. Drawn rather than printed because the decision turns
+   on where in the range it sits — 72% and 97% are different judgements, and
+   two numbers in a column do not say so. */
+.dma-gcmeter {
+  width: 100%;
+  max-width: 96px;
+  height: 4px;
+  margin-top: var(--dt-spacing-4);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--dt-colors-background-container-neutral-emphasized);
+}
+.dma-gcmeter__fill { display: block; height: 100%; }
+.dma-gcmeter__fill[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-gcmeter__fill[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+.dma-gcmeter__fill[data-tone="neutral"]  { background: var(--dt-colors-border-neutral-emphasized); }
+
+/* --- Step 2: optimisation flags ------------------------------------------- */
+
+/* Four flag types across the card. Two columns at full width rather than four:
+   each type carries a fix and an owner, and four columns would truncate the
+   one line that makes a flag actionable. */
+.dma-gctypes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dt-spacing-16);
+}
+.dma-gctype {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-6);
+  padding: var(--dt-spacing-12);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+}
+/* The two Globex patterns share a family and are deliberately NOT merged, so
+   the family gets the left edge that says they belong together. */
+.dma-gctype[data-family="Query efficiency"] { border-left: 3px solid var(--dt-colors-background-warning-default); }
+.dma-gctype[data-family="Cost"]             { border-left: 3px solid var(--dt-colors-background-info-default); }
+.dma-gctype[data-family="Usability"]        { border-left: 3px solid var(--dt-colors-border-neutral-emphasized); }
+.dma-gctype__head {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-8);
+  flex-wrap: wrap;
+}
+.dma-gctype__head > svg { flex: none; color: var(--dt-colors-text-secondary-default); }
+.dma-gctype__stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--dt-spacing-8);
+}
+.dma-gctype__n {
+  font-size: var(--dt-typography-display-size);
+  line-height: 1.1;
+  font-weight: var(--dt-typography-weight-semibold);
+  color: var(--dt-colors-text-primary-default);
+}
+
+/* The DQL or the observation a flag rests on. Set apart because "it parses
+   before it filters" is an assertion and this is the evidence for it. */
+.dma-gcevidence {
+  margin-top: var(--dt-spacing-6);
+  padding: var(--dt-spacing-6) var(--dt-spacing-8);
+  border-radius: var(--dt-border-radius-container-default);
+  background: var(--dt-colors-background-container-neutral-subdued);
+  color: var(--dt-colors-text-secondary-default);
+  font-size: var(--dt-typography-small-size);
+  line-height: var(--dt-typography-small-line);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.dma-gcfilters {
+  display: flex;
+  align-items: center;
+  gap: var(--dt-spacing-12);
+  flex-wrap: wrap;
+}
+.dma-gcfilters .dt-input { width: auto; min-width: 170px; }
+
+/* --- Step 3: close-out policy --------------------------------------------- */
+
+/* What is holding the close. A dotted list rather than a table, because every
+   row is owned by a different stage and the useful read is "how many and how
+   bad", not a comparison across columns. */
+.dma-gcgate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+}
+.dma-gcgate__row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--dt-spacing-12);
+}
+.dma-gcgate__dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-neutral-default);
+}
+.dma-gcgate__dot[data-tone="critical"] { background: var(--dt-colors-background-critical-default); }
+.dma-gcgate__dot[data-tone="warning"]  { background: var(--dt-colors-background-warning-default); }
+.dma-gcgate__dot[data-tone="info"]     { background: var(--dt-colors-background-info-default); }
+
+.dma-gcpolicy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+}
+.dma-gcpolicy__row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--dt-spacing-16);
+}
+
+/* The action a rule takes. Revoke, delete and retain are three different
+   amounts of consequence and must not be three identical grey chips. */
+.dma-gcrule {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dt-spacing-6);
+  padding: 2px var(--dt-spacing-8);
+  border-radius: var(--dt-border-radius-container-default);
+  font-size: var(--dt-typography-small-size);
+  border: 1px solid var(--dt-colors-border-neutral-default);
+  color: var(--dt-colors-text-secondary-default);
+}
+.dma-gcrule > svg { flex: none; }
+.dma-gcrule[data-action="revoke"] {
+  border-color: var(--dt-colors-border-critical-default);
+  background: var(--dt-colors-background-critical-subdued);
+  color: var(--dt-colors-text-critical-default);
+}
+.dma-gcrule[data-action="delete"] {
+  border-color: var(--dt-colors-border-warning-default);
+  background: var(--dt-colors-background-warning-subdued);
+  color: var(--dt-colors-text-warning-default);
+}
+.dma-gcrule[data-action="retain"] {
+  border-color: var(--dt-colors-border-success-default);
+  background: var(--dt-colors-background-success-subdued);
+  color: var(--dt-colors-text-success-default);
+}
+
+/* --- Step 4: record ------------------------------------------------------- */
+
+/* The closeout ledger. Same right-aligned figure column as Deploy's
+   reconciliation, for the same reason: the last row is a zero and it has to be
+   obviously a zero rather than lost in prose. */
+.dma-gcledger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+}
+.dma-gcledger__row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--dt-spacing-16);
+  padding: var(--dt-spacing-4) 0;
+}
+.dma-gcledger__n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--dt-typography-weight-semibold);
+}
+
+/* Named exclusions. The crosses are the point — this is a list of things the
+   stage does not do, and it should not be mistakable for a feature list. */
+.dma-gcoff {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-12);
+}
+.dma-gcoff__row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--dt-spacing-12);
+}
+.dma-gcoff__x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--dt-colors-background-container-neutral-emphasized);
+  color: var(--dt-colors-text-subdued-default);
+}
+
+.dma-gcfeature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dt-spacing-4);
+  padding-left: var(--dt-spacing-12);
+  border-left: 3px solid var(--dt-colors-border-neutral-emphasized);
+}
+
+@media (max-width: 1280px) {
+  .dma-varoute { grid-template-columns: 1fr; }
+  /* Exceptions: six lifecycle cells will not sit on one line here, and the
+     tile rail gives up width before the pane does — the pane is where the
+     work happens. */
+  .dma-exlife { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dma-exwork { grid-template-columns: 232px minmax(0, 1fr); }
+  .dma-vaclasses { grid-template-columns: 1fr; }
+  .dma-trroute { grid-template-columns: 1fr; }
+  .dma-calstrip { grid-template-columns: 1fr 1fr; }
+  .dma-calstrip__main { grid-column: 1 / -1; }
+  /* nth-child, not :first-of-type — the main column is a div too. */
+  .dma-calstrip__side:nth-child(2) { padding-left: 0; border-left: 0; }
+}
+
+@media (max-width: 1024px) {
+  .dma-body { grid-template-columns: 1fr; }
+  .dma-sidebar { display: none; }
+  /* Deploy: the wave cards and the two-failure explainer both stack. The bar
+     keeps its full width either way, which is the one thing that must not be
+     narrowed — a 3% segment that disappears takes the argument with it. */
+  .dma-dpwaves { grid-template-columns: minmax(0, 1fr); }
+  .dma-dpsplit { grid-template-columns: 1fr; }
+  .dma-dpsplit__half:last-child { padding-top: var(--dt-spacing-4); }
+  .dma-dpfilters .dt-input { width: 100%; }
+  /* Govern & Close: the flag-type cards stack, and the policy rows drop their
+     fixed action column so the rule label is not squeezed to one word per
+     line. The gate keeps its three-column shape — the navigate button on the
+     right is what makes it a gate rather than a wall. */
+  .dma-gctypes { grid-template-columns: minmax(0, 1fr); }
+  .dma-gcpolicy__row { grid-template-columns: minmax(0, 1fr); gap: var(--dt-spacing-6); }
+  .dma-gcfilters .dt-input { width: 100%; }
+  .dma-calstrip { grid-template-columns: 1fr; }
+  .dma-calstrip__side { padding-left: 0; border-left: 0; }
+  .dma-calphases { grid-template-columns: 1fr 1fr; }
+  .dma-calstrat { grid-template-columns: 1fr; align-items: start; }
+  .dma-trstrip { grid-template-columns: 1fr; }
+  .dma-trstrip__side { padding-left: 0; border-left: 0; }
+  .dma-trphases { grid-template-columns: 1fr 1fr; }
+  .dma-trsplit, .dma-trcompare { grid-template-columns: 1fr; }
+  .dma-trfilters { flex-wrap: wrap; }
+  .dma-trfilters .dt-input + .dt-input { width: 100%; }
+  /* Validate: the same three collapses Translate needs, for the same reasons —
+     the paired cards stack, the signal matrix drops to narrower tick columns so
+     the signal name keeps its room, and the toolbar wraps instead of pushing
+     the search field off the edge of the card. */
+  .dma-vatwo { grid-template-columns: 1fr; }
+  .dma-vamatrix__row { grid-template-columns: minmax(0, 1fr) repeat(3, 64px); gap: var(--dt-spacing-8); }
+  .dma-vafilters { flex-wrap: wrap; }
+  .dma-vafilters .dt-input { width: 100%; }
+  /* Exceptions: the rail stops being a column and becomes a strip above the
+     pane. A 232px sidebar on a 1024px screen leaves the DQL editor too narrow
+     to read a wrapped query in, and the editor is the stage. */
+  .dma-exwork { grid-template-columns: 1fr; }
+  .dma-extiles {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+    max-height: none;
+    align-items: center;
+  }
+  .dma-extiles__head { width: 100%; }
+  .dma-extile { width: auto; }
+  .dma-extile__body { flex: none; max-width: 180px; }
+  .dma-exlife { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dma-exnotes { grid-template-columns: 1fr; gap: var(--dt-spacing-2) 0; }
+  .dma-exnotes dd { margin-bottom: var(--dt-spacing-8); }
+  .dma-exfilters { flex-wrap: wrap; }
+  .dma-exfilters .dt-input { width: 100%; }
+}
